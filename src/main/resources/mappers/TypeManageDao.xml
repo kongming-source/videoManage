@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.TypeManageDao">
+
+
+    <select id="queryByType" resultType="com.entity.TypeManage">
+        select type_id tid,video_id vid from typemanage where type_id = #{tid}
+    </select>
+
+    <!--加载视频类型-->
+    <select id="get" resultType="com.entity.Type">
+        select type.type_id tid,type.type_name tname from type,typemanage
+        where type.type_id = typemanage.type_id and typemanage.video_id = #{vid}
+    </select>
+
+    <!--添加-->
+    <insert id="add1" parameterType="com.entity.TypeManage">
+        insert into typemanage(video_id,type_id) values(#{vid},#{tid})
+    </insert>
+
+    <!--批量添加-->
+    <insert id="add" parameterType="com.entity.TypeManage" >
+        insert into typemanage(video_id,type_id) values
+        <foreach collection="tm" item="t" separator=",">
+            (#{t.vid},#{t.tid})
+        </foreach>
+    </insert>
+
+   <!-- 删除-->
+    <delete id="del" parameterType="com.entity.TypeManage">
+        delete from typemanage where video_id = #{vid} and type_id = #{tid}
+    </delete>
+</mapper>

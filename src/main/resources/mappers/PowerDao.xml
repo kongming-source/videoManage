@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.PowerDao">
+
+    <!--用户权限表映射-->
+    <resultMap id="powerMap" type="com.entity.Power">
+        <id property="uid" column="user_id"/>
+        <result property="upid" column="userpower_id"/>
+        <result property="startTime" column="starttime"/>
+        <result property="duration" column="duration"/>
+        <result property="upstate" column="userpower_state"/>
+        <association property="power" javaType="com.entity.UserPower">
+            <id property="userPower_id" column="userpower_id"/>
+            <result property="userPower_name" column="userpower_name"/>
+        </association>
+    </resultMap>
+
+    <!--查询用户权限-->
+    <select id="query" resultMap="powerMap">
+        select * from power p,userpower up where p.userpower_id = up.userpower_id and p.user_id = #{uid}
+    </select>
+
+    <!--添加用户权限-->
+    <insert id="add" parameterType="com.entity.Power">
+        insert into power(user_id,userpower_id,starttime,duration)
+        values(#{uid},#{upid},#{startTime},#{duration})
+    </insert>
+
+    <!--修改用户权限-->
+    <update id="mod" parameterType="com.entity.Power">
+        update power set
+        userpower_id = #{upid},
+        starttime = #{startTime},
+        duration = #{duration},
+        userpower_state = #{upstate}
+        where userpower_id = #{old} and user_id = #{uid}
+    </update>
+</mapper>

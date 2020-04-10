@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.UserDao">
+    <!--用户表映射-->
+    <resultMap type="com.entity.User" id="userMap">
+        <id property="uid" column="user_id"/>
+        <result property="uname" column="user_name"/>
+        <result property="password" column="password"/>
+        <result property="sex" column="sex"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="state" column="state"/>
+        <association property="userPower" javaType="com.entity.Power">
+            <id property="uid" column="user_id"/>
+            <id property="upid" column="userpower_id"/>
+            <result property="startTime" column="starttime"/>
+            <result property="duration" column="duration"/>
+            <result property="upstate" column="userpower_state"/>
+            <association property="power" javaType="com.entity.UserPower">
+                <id property="userPower_id" column="userpower_id"/>
+                <result property="userPower_name" column="userpower_name"/>
+            </association>
+        </association>
+    </resultMap>
+
+    <!--查询所有信息，不带其他表信息-->
+    <select id="queryAll" parameterType="com.entity.User" resultType="com.entity.User">
+        select user_id uid,user_name uname,password,sex,phone,email,state from user
+        <where>
+            <if test="uname != null and uname != ''">
+                and u.user_name like concat('%',#{uname},'%')
+            </if>
+        </where>
+    </select>
+
+    <!--查询用户,带其他信息-->
+    <select id="query" parameterType="com.entity.User" resultMap="userMap">
+        select * from user u,userpower up, power p where
+        u.user_id = p.user_id and p.userpower_id = up.userpower_id
+        <if test="uname != null and uname != ''">
+            and u.user_name like concat('%',#{uname},'%')
+        </if>
+       <!-- <if test="state != null and state != ''">
+            and u.user_name like concat('%',#{uname},'%')
+        </if>-->
+    </select>
+
+    <!--加载用户-->
+    <select id="get" resultMap="userMap">
+        select * from user u,userpower up, power p where
+        u.user_id = p.user_id and p.userpower_id = up.userpower_id and u.user_id = #{uid}
+    </select>
+
+    <!--处理登录-->
+    <select id="login" parameterType="com.entity.User" resultMap="userMap">
+        select * from user where user_name = #{uname} and password = #{password} and state = 1
+    </select>
+
+    <!--管理员登录 关联用户权限表，权限为1 -->
+    <select id="adminLogin" parameterType="com.entity.User" resultMap="userMap">
+        select  * from user u,power p where u.user_id = p.user_id and p.userpower_id = 1 and u.state = 1
+        and u.user_name = #{uname} and u.password = #{password}
+    </select>
+
+    <!--用户名查重-->
+    <select id="judgeUname" resultType="com.entity.User">
+        select * from user where user_name = #{uname}
+    </select>
+
+   <!-- 添加用户-->
+    <insert id="add" parameterType="com.entity.User" useGeneratedKeys="true" keyProperty="uid">
+        insert into user(user_name,password,phone,email)
+        values(#{uname},#{password},#{phone},#{email});
+    </insert>
+
+    <!--修改用户信息-->
+    <update id="mod" parameterType="com.entity.User">
+        update user set
+        user_name = #{uname},
+        password = #{password},
+        sex = #{sex},
+        phone = #{phone},
+        email = #{email}
+        where user_id = #{uid}
+    </update>
+
+    <!--禁用用户-->
+    <update id="forbidden" >
+        update  user set state = 2 where user_id = #{uid}
+    </update>
+
+    <!--解禁用户-->
+    <update id="unForbidden" >
+        update  user set state = 1 where user_id = #{uid}
+    </update>
+
+   <!-- 删除用户-->
+    <delete id="del">
+        delete from user where user_id = #{uid}
+    </delete>
+
+
+</mapper>

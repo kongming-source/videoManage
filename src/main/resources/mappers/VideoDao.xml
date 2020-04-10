@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.VideoDao">
+
+   <!-- 视频表映射-->
+    <resultMap id="videoMap" type="com.entity.Video">
+        <id property="vid" column="video_id"/>
+        <result property="vname" column="video_name"/>
+        <result property="pic" column="pic"/>
+        <result property="author" column="author"/>
+        <result property="online" column="online"/>
+        <result property="area" column="area"/>
+        <result property="duration" column="duration"/>
+        <result property="state" column="state"/>
+        <result property="power" column="power"/>
+        <association property="videoPower" javaType="com.entity.VideoPower">
+            <id property="videoPower_id" column="videopower_id"/>
+            <result property="videoPower_name" column="videopower_name"/>
+        </association>
+        <collection property="type" ofType="com.entity.Type" column="video_id" select="videoType">
+            <id property="tid" column="type_id"/>
+            <result property="tname" column="type_name"/>
+        </collection>
+    </resultMap>
+
+    <!--获取视频类型-->
+    <select id="videoType" resultType="com.entity.Type">
+        select
+         type.type_id tid,
+         type.type_name tname
+         from type,typemanage
+        where type.type_id = typemanage.type_id and typemanage.video_id = #{video_id}
+    </select>
+
+    <!--视频查询-->
+    <select id="query"  parameterType="com.entity.Video" resultMap="videoMap">
+        select * from video v,videopower vp
+        where v.power = vp.videopower_id
+        <if test="vid != null and vid != ''">
+            and video_id = #{vid}
+        </if>
+        <if test="vname != null and vname != ''">
+            and video_name like concat('%',#{vname},'%')
+        </if>
+        <if test="area != null and area != ''">
+            and area = #{area}
+        </if>
+        <if test="state != null and state != ''">
+            and state = #{state}
+        </if>
+        <if test="power != null and power != ''">
+            and power = #{power}
+        </if>
+    </select>
+
+    <!--加载视频-->
+    <select id="get" resultMap="videoMap">
+        select * from video v,videopower vp
+        where v.power = vp.videopower_id and v.video_id = #{vid}
+    </select>
+
+    <!--推荐 已通过审核-->
+    <select id="recommend" resultMap="videoMap">
+         select * from video v,videopower vp
+        where v.power = vp.videopower_id and state = 2 order by online desc
+    </select>
+
+    <!--更新视频-->
+    <update id="mod" parameterType="com.entity.Video">
+        update video set
+        video_name = #{vname},
+        pic = #{pic},
+        author = #{author},
+        online = #{online},
+        area = #{area},
+        duration = #{duration},
+        power = #{power},
+        state = #{state}
+        where video_id = #{vid}
+    </update>
+
+    <!--添加视频-->
+    <insert id="add" parameterType="com.entity.Video" useGeneratedKeys="true" keyProperty="vid">
+        insert into video(video_name,pic,author,online,area,duration,power,state)
+        values(#{vname},#{pic},#{author},#{online},#{area},#{duration},#{power},#{state})
+    </insert>
+
+    <!--删除视频-->
+    <delete id="del" >
+        delete from video where video_id = #{vid}
+    </delete>
+
+
+</mapper>

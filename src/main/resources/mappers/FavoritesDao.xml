@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.FavoritesDao">
+
+    <!--收藏夹映射-->
+    <resultMap id="favoritesMap" type="com.entity.Favorites">
+        <id property="uid" column="user_id"/>
+        <id property="vid" column="video_id"/>
+        <result property="createtime" column="createtime"/>
+        <result property="fstate" column="favorites_state"/>
+        <association property="user" javaType="com.entity.User">
+            <id property="uid" column="user_id"/>
+            <result property="uname" column="user_name"/>
+        </association>
+        <association property="video" javaType="com.entity.Video">
+            <id property="vid" column="video_id"/>
+            <result property="vname" column="video_name"/>
+            <result property="pic" column="pic"/>
+            <result property="author" column="author"/>
+            <result property="online" column="online"/>
+            <result property="area" column="area"/>
+            <result property="duration" column="duration"/>
+            <result property="state" column="state"/>
+        </association>
+    </resultMap>
+    <!--判断是否已收藏-->
+    <select id="judge" parameterType="com.entity.Favorites" resultType="com.entity.Favorites">
+        select user_id uid,video_id vid from favorites where user_id = #{uid} and video_id = #{vid}
+    </select>
+
+    <!--查询所有收藏夹-->
+    <select id="query" resultMap="favoritesMap">
+        select * from favorites f,video v, user u where f.user_id = u.user_id and f.video_id = v.video_id
+    </select>
+
+    <!--查询用户收藏夹-->
+    <select id="get" resultMap="favoritesMap">
+        select * from favorites f,video v, user u where f.user_id = u.user_id and f.video_id = v.video_id and u.user_id = #{uid}
+    </select>
+
+   <!-- 添加收藏-->
+    <insert id="add" parameterType="com.entity.Favorites">
+        insert into favorites(user_id,video_id,createtime)
+        values(#{uid},#{vid},#{createtime})
+    </insert>
+
+    <!--取消收藏-->
+    <delete id="del" parameterType="com.entity.Favorites">
+        delete from favorites where user_id = #{uid} and video_id = #{vid}
+    </delete>
+</mapper>
